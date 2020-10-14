@@ -1,2 +1,2 @@
-# TPK4560-Fordypningsprosjekt
+# TPK4560-Specialization Project
 Specialization Project

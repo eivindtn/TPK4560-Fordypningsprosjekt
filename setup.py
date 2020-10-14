@@ -7,5 +7,8 @@ setuptools.setup(
     install_requires =[
         'zivid'
         'opencv-python'
+        'pycairo'
+        'CairoSVG'
+        'cairocffi'
     ]
 )
