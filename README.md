@@ -26,4 +26,4 @@ python gen_pattern.py
 ### Projector Calibration
 To start the calibration we need to show the generated checkerboard image in the projector as in the image below. Then we project this checkerboard either onto a plane or a wall. 
 
-<img src="https://github.com/eivindtn/TPK4560-Specalization-Project/blob/main/images/Test%20Jig/2.jpg" width="1000">
+<img src="https://github.com/eivindtn/TPK4560-Specalization-Project/blob/main/images/Test%20Jig/2.jpg" width="500">
