@@ -11,7 +11,7 @@ To use the Zivid camera you need to download and install the "Zivid core" packag
 
 Follow the guide here [zivid-python](https://github.com/zivid/zivid-python) to install the SDK and zivid-pyhton.
 ### Package dependicies
-To install the required packages run
+To install the package dependicies
 ```
 pip install setup.py
 ```
@@ -23,7 +23,7 @@ Run this script to generate a .png file of a pattern:
 ```
 python gen_pattern.py
 ```
-### Projcetor Calibration
+### Projector Calibration
 To start the calibration we need to show the generated checkerboard image in the projector as in the image below. Then we project this checkerboard either onto a plane or a wall. 
 
-
+![picture](https://github.com/eivindtn/TPK4560-Specalization-Project/blob/main/images/Test%20Jig/2.jpg)
