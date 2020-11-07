@@ -16,5 +16,6 @@ setuptools.setup(
         'vtk_visualizer'
         'pptk'
         'pyyaml'
+        'open3d'
     ]
 )
