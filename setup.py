@@ -10,5 +10,11 @@ setuptools.setup(
         'pycairo'
         'CairoSVG'
         'cairocffi'
+        'netCDF4'
+        'matplotlib'
+        'vtk'
+        'vtk_visualizer'
+        'pptk'
+        'pyyaml'
     ]
 )
