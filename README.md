@@ -2,7 +2,7 @@
 ## Table of contents
 * [General info](#general-info)
 * [Setup](#setup)
-## General info
+## General Info
 This repository presents a method for pair calibration of a depth camera(Zivid) with an external projector without using a printed checkerboard. The output of the calibration is the projector intrinsics and the extrinsics parameters. The code is inspired from this article [Bingyao Huang](https://bingyaohuang.github.io/Calibrate-Kinect-and-projector/).
 ## Setup
 ### Zivid SDK
@@ -10,5 +10,16 @@ To use the Zivid camera you need to download and install the "Zivid core" packag
 
 Follow the guide here [zivid-python](https://github.com/zivid/zivid-python) to install the SDK and zivid-pyhton.
 ### Package dependicies
-To install the packages to runt the projector calibration script you need to install. 
+To install the required packages run
+```
+pip install setup.py
+```
+## Procedure
+The goal of this calibration was to have easy setup that can 
+### Projected checkerboard image
+In order to make a checkerboard image you need to change the size of the image to your external projector resoultion with a desired colums, rows and square size.
+Run this script to generate a .png file of a pattern:
+```
+python gen_pattern.py
+```
 
