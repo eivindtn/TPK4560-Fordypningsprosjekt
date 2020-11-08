@@ -247,8 +247,17 @@ def main():
     #print("tvecs : \n")
     #print(tvecs)
 
+    P_p_2d = np.reshape(P_p_2d, (len(P_p_2d),len(P_p_2d[0]),1,len(P_p_2d[0][0])))
+    mean_error = 0
+    for i in range(len(P_3d_obj)):
+        imgpoints2, _ = cv2.projectPoints(P_3d_obj[i], rvecs[i], tvecs[i], mtx, dist)
+        error = cv2.norm(P_p_2d[i], imgpoints2, cv2.NORM_L2)/len(imgpoints2)
+        mean_error += error
+    print( "\nTotal error Re-projection Error: {}".format(mean_error/len(P_3d_obj)) )
+
+
     T_C_P = np.column_stack((R,T))
-    print("Transformation matrix from camera to projector frame:\n")
+    print("\nTransformation matrix from camera to projector frame:\n")
     print(T_C_P)
     
     point_cloud = open3d.geometry.PointCloud()
