@@ -78,7 +78,7 @@ def point_to_xy(points, intrinsics):
 def visualizepointcloud(xyzar,windowname):
     point_cloud = open3d.geometry.PointCloud()
     point_cloud.points = open3d.utility.Vector3dVector(xyzar)
-    coord = open3d.geometry.TriangleMesh.create_coordinate_frame(size=0.2, origin=[0, 0, 0])
+    coord = open3d.geometry.TriangleMesh.create_coordinate_frame(size=200, origin=[0, 0, 0])
     open3d.visualization.draw_geometries([point_cloud, coord],window_name=windowname,width=1000, height=1080)
 def interpolatexyz(array, u,v, px):
     xyz = array[v-px:v+px+1, u-px:u+px+1]

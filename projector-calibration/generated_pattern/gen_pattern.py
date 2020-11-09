@@ -17,7 +17,7 @@ python gen_pattern.py -o out.svg -r 11 -c 8 -T circles -s 20.0 -R 5.0 -u mm -w 2
 """
 
 import argparse
-#
+
 from generated_pattern.svgfig import *
 import cv2
 import numpy as np
@@ -89,8 +89,8 @@ def main():
     mp[p_type]()
     # this should save pattern to output
     pm.save()
-    pm.save_2d_projector_corner_cordinates()
-
+    cooord = pm.save_2d_projector_corner_cordinates()
+    #print(cooord)
     #convert from vector file(svg) to png
     cairosvg.svg2png(url='chessboard.svg', write_to='image.png')
 
@@ -101,7 +101,6 @@ def main():
         img2 = cv2.cvtColor(img2, cv2.COLOR_RGBA2RGB)    # strip alpha channel
 
     cv2.imshow('Checkerboard', img2); cv2.waitKey(0); cv2.destroyAllWindows()
-    
 if __name__ == "__main__":
     main()
 

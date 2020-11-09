@@ -32,12 +32,12 @@ To start the calibration we need to show the generated checkerboard image in the
 #### Capture Point Cloud and Images
 The zivid allows us to capture a file (.zdf) containing both formats: point cloud(.ply) and the (.png). Since the calibration is based on [Zhang's method](https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#calibratecamera) we need to have at least 3 different poses. My recomedation is to use at least 20 poses to obtain a more accurate result.
 
-I did this using the zivid studio and saved the .zdf files and images .png in the folders [zdf](https://github.com/eivindtn/TPK4560-Specalization-Project/tree/main/projector-calibration/zdf) and [captured_images](https://github.com/eivindtn/TPK4560-Specalization-Project/tree/main/projector-calibration/captured_images).
+I did this using the zivid studio and saved the .zdf files and images .png in the folders [zdf](https://github.com/eivindtn/TPK4560-Specalization-Project/tree/main/projector-calibration/zdf) and [captured_images](https://github.com/eivindtn/TPK4560-Specalization-Project/tree/main/projector-calibration/captured_images). Another way ïs to capture and convert the .zdf file using zivids functions for this. 
 
 #### Processing
 
 ***
-$\mathbf{\text{Processing of Zivid and projector pair calibration:}}$<br>
+$\mathbf{\text{Processing of Zivid and projector pair calibration:}}$
 ***
 This notebook explains the processing theory behind the Zivid and the projector pair calibration. The method require that you have a depth camera with the belonging intrinsics parameters to find the xyz points for the corresponding pixel cordinates. The focus is to calibrate the intrinsic parameters of the projector and the extrinsic parameters between the projector and the Zivid depth camera without using a printed checkerboard.
 
@@ -61,7 +61,7 @@ square_size = 90 #The square size in pixels
 xspacing = (width - cols * square_size) / 2.0
 yspacing = (height - rows * square_size) / 2.0
 
-for y in range(int(yspacing),height-int(yspacing), square_size):
+for y in range(int(yspacing),height-int(yspacing), square_size): # to iterate over the checkerboard colums
     if (y + square_size > height -int(yspacing)):
         break
     for x in range(int(xspacing), width-int(xspacing), square_size):
