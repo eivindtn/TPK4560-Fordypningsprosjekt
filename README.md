@@ -35,42 +35,4 @@ The zivid allows us to capture a file (.zdf) containing both formats: point clou
 I did this using the zivid studio and saved the .zdf files and images .png in the folders [zdf](https://github.com/eivindtn/TPK4560-Specalization-Project/tree/main/projector-calibration/zdf) and [captured_images](https://github.com/eivindtn/TPK4560-Specalization-Project/tree/main/projector-calibration/captured_images). Another way ïs to capture and convert the .zdf file using zivids functions for this. 
 
 #### Processing
-
-***
-$\mathbf{\text{Processing of Zivid and projector pair calibration:}}$
-***
-This notebook explains the processing theory behind the Zivid and the projector pair calibration. The method require that you have a depth camera with the belonging intrinsics parameters to find the xyz points for the corresponding pixel cordinates. The focus is to calibrate the intrinsic parameters of the projector and the extrinsic parameters between the projector and the Zivid depth camera without using a printed checkerboard.
-
-Let's say you have projected the generated checkerboard image in your external projector and captured a number of X different poses with the depth camera and saved it in a desired location. When the generated checkerboard image were made, then the inner corner pixel cordinates were saved as: 
-*** 
- $$\mathbf{P}^{\text{2d}}_{\text{p}} = [\mathbf{q}_0, \mathbf{q}_1,\dots \mathbf{q}_i, \dots \mathbf{q}_{K}]$$
-***
-where $\mathbf{q}_i = [ u_i, v_i ]$ are the correspondent pixel cordinates of the $i^\text{th}$ in the projctor image space and $K$ are the dependent on the projector resoultion, checkerboard square size and the spacing(x and y) into the squares. The used checkerboard had squares of 10 columns and 7 rows, which means 9 columns and 6 rows of inner corners. The saved cordinates in $\mathbf{P}^{\text{2d}}_{\text{p}}$ are generated from the code below:
-***
-
-
-```python
-import numpy as np
-checkerboardcordinates = []
-width = 1024 #The projector width resoultion
-height = 768 #The projector height resoultion
-cols = 10 # Number of colums
-rows = 7 # Number of rows
-square_size = 90 #The square size in pixels
-
-xspacing = (width - cols * square_size) / 2.0
-yspacing = (height - rows * square_size) / 2.0
-
-for y in range(int(yspacing),height-int(yspacing), square_size): # to iterate over the checkerboard colums
-    if (y + square_size > height -int(yspacing)):
-        break
-    for x in range(int(xspacing), width-int(xspacing), square_size):
-        if (x + square_size > width -int(xspacing)):
-            break
-        if(x > int(xspacing) and y > int(yspacing)):   
-            checkerboardcordinates = np.append(checkerboardcordinates, np.array([x,y]))
-checkerboardcordinates = np.reshape(checkerboardcordinates, (-1,2))
-print(checkerboardcordinates)
-```
-
-Another soloution to save the pixel cordinates could be to use the OpenCV function [findChessboardCorners](https://docs.opencv.org/2.4/modules/calib3d/doc/camera_calibration_and_3d_reconstruction.html#findchessboardcorners) for the generated image from running  
+The explaination of code and theory behind is desscribed in the [Jupyter noterbook](https://github.com/eivindtn/TPK4560-Specalization-Project/blob/main/projector-calibration/Zivid_Paired_Projector_Calibration.ipynb).
