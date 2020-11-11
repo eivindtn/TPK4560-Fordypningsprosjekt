@@ -91,11 +91,16 @@ def interpolatexyz(array, u,v, px):
     validarr = array_masked[~array_masked.mask]
         
     xyz_interp = griddata((valid_xs, valid_ys, valid_zs), validarr.ravel(),
-                                    (x_indx, y_indx, z_indx), method='linear')
+                                    (x_indx, y_indx, z_indx), method='nearest')
     return xyz_interp[px][px]
-
-
-
+def find_center_of_4_cordinates(array, rows, columns):
+    center = np.array([])
+    for k in range(0,rows*columns-columns,columns):
+        for i in range(0,columns-1):
+            center = np.append(center, ([array[i+k], array[i+1+k], array[i+columns+k],array[i+columns+1+k]]))
+    center = np.reshape(center, ((rows-1)*(columns-1),4,2))
+    center = np.average(center.T,axis = 1)
+    return center.T
 
 
 def main():
@@ -147,8 +152,8 @@ def main():
     P_3d   = []  #These cordinates are obatained from mapping the 2D cordinates of the image space to zivid depth camera view space. 
                 #This is quiered from using the Zivid camera intrinsics to map from pixel cordinates to point in the space.
     P_3d_obj = []
-    
-
+    nan_pixels = 0
+    method = 'centerr'
     # Extracting path of individual image stored in a given directory
     images = glob.glob('captured_images/*.png')
     zdf    = glob.glob('zdf/*.zdf')
@@ -184,27 +189,35 @@ def main():
         """
         if ret == True:
             P_3d = []
-            P_p_2d.append(pm.save_2d_projector_corner_cordinates())
+            
             corners2 = cv2.cornerSubPix(gray, corners, (11,11),(-1,-1), criteria)
+            if method == 'center':
+                corners2 = find_center_of_4_cordinates(corners2, 6, 9)
+                corners2 = np.reshape(corners2,(40,1,2))
+                P_p_2d.append(find_center_of_4_cordinates(pm.save_2d_projector_corner_cordinates(), 6, 9))
+            else:
+                P_p_2d.append(pm.save_2d_projector_corner_cordinates())
             P_c_2d.append(corners2)
             #print("Cordinates found in camera fram from findchessboardcorners: \n",corners2[0:10])
             for i in range(len(corners2)):
                 if np.isnan(xyz[int(corners2[i][0][1])][int(corners2[i][0][0])]).any() == True:
-                    P_3d.append(interpolatexyz(xyz,int(corners2[i][0][0]),int(corners2[i][0][1]), 20))
+                    nan_pixels += 1
+                    P_3d.append(interpolatexyz(xyz,int(corners2[i][0][0]),int(corners2[i][0][1]), 100))
                 else:
                     P_3d.append(xyz[int(corners2[i][0][1])][int(corners2[i][0][0])])
                 #P_3d.append(xyz_interp[int(corners2[i][0][1])][int(corners2[i][0][0])])
             
             c_3 = np.identity(3)-(1/3)*np.ones((3,3))
             P_3d_t = np.transpose(P_3d)
+            centroid = np.average(P_3d_t,axis = 1)
             P_3d_c = (P_3d_t.T-np.average(P_3d_t,axis = 1)).T   
             u, s, vh = np.linalg.svd(P_3d_c)
             P_3d_rotate_t = np.dot(np.transpose(u), P_3d_c)
             #P_3d_rotate_t = np.transpose(P_3d_rotate)
             P_3d_obj.append(P_3d_rotate_t.T)
-    
+            
             # Draw and display the corners
-            img = cv2.drawChessboardCorners(img, CHECKERBOARD, corners2, ret)
+            #img = cv2.drawChessboardCorners(img, CHECKERBOARD, corners2, ret)
 
             #cv2.imshow(images[fname],img)
             #plt.imshow(img)
@@ -232,12 +245,15 @@ def main():
     P_3d_obj[:,:,2] = 0
     P_3d_obj = P_3d_obj.astype('float32') 
     P_p_2d = np.asarray(P_p_2d)
+    P_c_2d = np.asarray(P_c_2d)
     P_p_2d = P_p_2d.astype('float32')
+    P_c_2d = P_c_2d.astype('float32')
+    #P_c_2d = np.reshape(P_c_2d, (len(P_c_2d),len(P_c_2d[0]),len(P_c_2d[0][0])))
     size=(1024,768)
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(P_3d_obj, P_p_2d,size , None, None)
 
     retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cv2.stereoCalibrate(P_3d_obj, P_p_2d, P_c_2d, mtx, dist, intrinsics, distcoeffszivid, size)
-
+    
     print("Projector instrinsic matrix : \n")
     print(mtx)
     print("Projector disortion coeffsients : \n")
@@ -254,7 +270,7 @@ def main():
         error = cv2.norm(P_p_2d[i], imgpoints2, cv2.NORM_L2)/len(imgpoints2)
         mean_error += error
     print( "\nTotal error Re-projection Error: {}".format(mean_error/len(P_3d_obj)) )
-
+    print("Number of nan pixels cordinates in the depth map:", nan_pixels)
 
     T_C_P = np.column_stack((R,T))
     print("\nTransformation matrix from camera to projector frame:\n")
@@ -264,7 +280,7 @@ def main():
     point_cloud.points = open3d.utility.Vector3dVector(P_3d)
     c_frame = open3d.geometry.TriangleMesh.create_coordinate_frame(size=200, origin=[0, 0, 0])
     p_frame = copy.deepcopy(c_frame)
-    p_frame.rotate(R, center =(0,0,0))
+    p_frame.rotate(R, center = (0,0,0))
     p_frame = copy.deepcopy(p_frame).translate((T[0][0], T[1][0], T[2][0]))
     open3d.visualization.draw_geometries([point_cloud ,c_frame, p_frame])
 
