@@ -12,5 +12,5 @@
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/projector-calibration/"
         }
-    ]
+    ]   
 }

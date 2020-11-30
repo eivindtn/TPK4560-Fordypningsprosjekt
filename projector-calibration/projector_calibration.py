@@ -11,6 +11,7 @@ from generated_pattern.gen_pattern import *
 import zivid
 from scipy.interpolate import griddata
 import open3d
+
  
 #Open3d
 np.set_printoptions(suppress=True)
@@ -28,7 +29,7 @@ def pixel_to_point(depth, point, intrinsics, depth_scale=1000):
                  [0, 0, 1]]
 
     Returns:
-        x, y, z: coordinates in world, might want to round
+        x, y, z: coordinates in world
     """
     fx = intrinsics[0, 0]
     fy = intrinsics[1, 1]
@@ -150,10 +151,12 @@ def main():
     P_p_2d = []  #Saved 2D cordinates of the i-th corner in the projector image space. This cordinates are imported from the script gen_pattern.py
     P_c_2d = []  #2D cordinates of the i-th corner in the camera image space found by OPENCV findChessboardCorners.
     P_3d   = []  #These cordinates are obatained from mapping the 2D cordinates of the image space to zivid depth camera view space. 
-                #This is quiered from using the Zivid camera intrinsics to map from pixel cordinates to point in the space.
+                 #This is quiered from using the Zivid camera intrinsics to map from pixel cordinates to point in the space.
+    P_3d_all = []
     P_3d_obj = []
+
     nan_pixels = 0
-    method = 'centerr'
+    method = 'corner'
     # Extracting path of individual image stored in a given directory
     images = glob.glob('captured_images/*.png')
     zdf    = glob.glob('zdf/*.zdf')
@@ -181,7 +184,8 @@ def main():
         # Find the chess board corners
         # If desired number of corners are found in the image then ret = true
         ret, corners = cv2.findChessboardCorners(gray, CHECKERBOARD, cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_FAST_CHECK + cv2.CALIB_CB_NORMALIZE_IMAGE)
-
+        if ret == False:
+            print(fname)
         """
         If desired number of corner are detected,
         we refine the pixel coordinates and display 
@@ -191,7 +195,7 @@ def main():
             P_3d = []
             
             corners2 = cv2.cornerSubPix(gray, corners, (11,11),(-1,-1), criteria)
-            if method == 'center':
+            if method == 'corner':
                 corners2 = find_center_of_4_cordinates(corners2, 6, 9)
                 corners2 = np.reshape(corners2,(40,1,2))
                 P_p_2d.append(find_center_of_4_cordinates(pm.save_2d_projector_corner_cordinates(), 6, 9))
@@ -206,7 +210,7 @@ def main():
                 else:
                     P_3d.append(xyz[int(corners2[i][0][1])][int(corners2[i][0][0])])
                 #P_3d.append(xyz_interp[int(corners2[i][0][1])][int(corners2[i][0][0])])
-            
+            P_3d_all.append(P_3d)
             c_3 = np.identity(3)-(1/3)*np.ones((3,3))
             P_3d_t = np.transpose(P_3d)
             centroid = np.average(P_3d_t,axis = 1)
@@ -223,16 +227,16 @@ def main():
             #plt.imshow(img)
             #plt.show()
             #cv2.waitKey(0)
-            print('Cordinates in frame ', fname, ':\n File location \n ', images[fname], '\n', zdf[fname])
+            #print('Cordinates in frame ', fname, ':\n File location \n ', images[fname], '\n', zdf[fname])
             str = ('``` '
                 ' \n'
                 'Projector image cordinates     Camera image cordinates    3D cordinates \n'
                 #this line is the part I need help with: list comprehension for the 3 lists to output the values as shown below
                 '```')
 
-            cordinates = "\n".join("{} {} {}".format(x, y, z) for x, y, z in zip(P_p_2d[fname], corners2, P_3d))
-            print(str)
-            print(cordinates)  
+            #cordinates = "\n".join("{} {} {}".format(x, y, z) for x, y, z in zip(P_p_2d[fname], corners2, P_3d))
+            #print(str)
+            #print(cordinates)  
                         
             #visualizepointcloud(P_3d,zdf[fname]+"3D Cordinates")
             #visualizepointcloud(P_3d_c.T,zdf[fname]+"3D Cordinates centered")
@@ -241,6 +245,8 @@ def main():
         
     cv2.destroyAllWindows()
 
+    P_3d_obj_plan = P_3d_obj
+    P_3d_obj_plan = np.asarray(P_3d_obj_plan)
     P_3d_obj = np.asarray(P_3d_obj)
     P_3d_obj[:,:,2] = 0
     P_3d_obj = P_3d_obj.astype('float32') 
@@ -250,10 +256,11 @@ def main():
     P_c_2d = P_c_2d.astype('float32')
     #P_c_2d = np.reshape(P_c_2d, (len(P_c_2d),len(P_c_2d[0]),len(P_c_2d[0][0])))
     size=(1024,768)
+    #ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(P_3d_obj, P_p_2d,size , None, 4,None,None,cv2.CALIB_ZERO_TANGENT_DIST, criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 2e-16))
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(P_3d_obj, P_p_2d,size , None, None)
 
-    retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cv2.stereoCalibrate(P_3d_obj, P_p_2d, P_c_2d, mtx, dist, intrinsics, distcoeffszivid, size)
-    
+    #retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cv2.stereoCalibrate(P_3d_obj, P_p_2d, P_c_2d, mtx, dist, intrinsics, distcoeffszivid, size)
+    retval, cameraMatrix1, distCoeffs1, cameraMatrix2, distCoeffs2, R, T, E, F = cv2.stereoCalibrate(P_3d_obj, P_c_2d, P_p_2d, intrinsics, distcoeffszivid, mtx, dist, size)
     print("Projector instrinsic matrix : \n")
     print(mtx)
     print("Projector disortion coeffsients : \n")
@@ -265,17 +272,64 @@ def main():
 
     P_p_2d = np.reshape(P_p_2d, (len(P_p_2d),len(P_p_2d[0]),1,len(P_p_2d[0][0])))
     mean_error = 0
+    Re_projection_frames = []
     for i in range(len(P_3d_obj)):
         imgpoints2, _ = cv2.projectPoints(P_3d_obj[i], rvecs[i], tvecs[i], mtx, dist)
         error = cv2.norm(P_p_2d[i], imgpoints2, cv2.NORM_L2)/len(imgpoints2)
+        print(images[i],"error number :", error, "\n")
         mean_error += error
+        Re_projection_frames.append([i+1,error])
+
+    Re_projection_frames = np.asarray(Re_projection_frames)
+    Re_porojection_errror_over_mean = []
+    for i in range (0, len(Re_projection_frames)):
+        if Re_projection_frames[i][1] > (mean_error/len(P_3d_obj)):
+            Re_porojection_errror_over_mean.append([images[i],Re_projection_frames[i][1]])
+
+
+    planar_deviation = P_3d_obj_plan[:,:,2]
+    mean_frames = []
+    for i in range(0, len(planar_deviation)):
+        mean_frame = np.mean(np.abs(planar_deviation[i]))
+        mean_frames.append([i+1, mean_frame])
+    mean_frames = np.asarray(mean_frames)
+    totmean_dev = np.mean(np.abs(planar_deviation))
+
     print( "\nTotal error Re-projection Error: {}".format(mean_error/len(P_3d_obj)) )
     print("Number of nan pixels cordinates in the depth map:", nan_pixels)
 
     T_C_P = np.column_stack((R,T))
     print("\nTransformation matrix from camera to projector frame:\n")
     print(T_C_P)
+
+    fig, ax = plt.subplots(figsize=(8,8))
+    fig.patch.set_visible(False)
+    ax.scatter(Re_projection_frames[:,0] , Re_projection_frames[:,1], s=5.0, color = "b", label = "Frames")
+    ax.grid(True)
     
+    ax.plot(Re_projection_frames[:,0], np.full((len(P_3d_obj,)),(mean_error/len(P_3d_obj))), color = "r",label = "Mean= {} px".format(np.round_((mean_error/len(P_3d_obj)),3)), linestyle = "--") #rett linje 
+    ax.set(title='Re-Projection Error {}'.format(method) , ylabel= "Re-Projection Error (px)",  xlabel='Frames')
+    legend = ax.legend(loc=(0.7,-0.14), shadow=True, fontsize='large')
+
+    # Put a nicer background color on the legend.
+    legend.get_frame().set_facecolor('#afeeee')
+
+    fig.savefig('Re-Projection-{}.png'.format(method))
+
+    fig, ax = plt.subplots(figsize=(8,8))
+    fig.patch.set_visible(False) # Treng kanskje ikkje 
+    ax.scatter(mean_frames[:,0] , mean_frames[:,1], s=5.0, color = "b", label = "Mean Frame")
+    ax.grid(True)
+    #y_mean_e = [mean_error/len(P_3d_obj), mean_error/len(P_3d_obj)]
+    ax.plot(mean_frames[:,0], np.full(len(mean_frames), totmean_dev), color = "r",label = "Total Mean= \u00B1 {} mm".format(np.round_((totmean_dev/1.0),2)), linestyle = "--") #rett linje 
+    ax.set(title='Plane Tolerance Deviation {}'.format(method) , ylabel= u"\u00B1 Deviation (mm)",  xlabel='Frames')
+    legend = ax.legend(loc=(0.7,-0.14), shadow=True, fontsize='large')
+
+    # Put a nicer background color on the legend.
+    legend.get_frame().set_facecolor('#afeeee')
+
+    fig.savefig('Planar-Deviation-{}.png'.format(method))
+
     point_cloud = open3d.geometry.PointCloud()
     point_cloud.points = open3d.utility.Vector3dVector(P_3d)
     c_frame = open3d.geometry.TriangleMesh.create_coordinate_frame(size=200, origin=[0, 0, 0])

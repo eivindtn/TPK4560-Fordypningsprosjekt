@@ -20,6 +20,5 @@ def showPIL(pilImage):
     image = ImageTk.PhotoImage(pilImage)
     imagesprite = canvas.create_image(w/2,h/2,image=image)
     root.mainloop()
-pilImage = Image.open("image.png")
-pilImage.show ()
-#showPIL(pilImage)
+pilImage = Image.open('\generated_pattern\1.png')
+showPIL(pilImage)
