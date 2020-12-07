@@ -35,4 +35,4 @@ The zivid allows us to capture a file (.zdf) containing both formats: point clou
 I did this using the zivid studio and saved the .zdf files and images .png in the folders [zdf](https://github.com/eivindtn/TPK4560-Specalization-Project/tree/main/projector-calibration/zdf) and [captured_images](https://github.com/eivindtn/TPK4560-Specalization-Project/tree/main/projector-calibration/captured_images). Another way ïs to capture and convert the .zdf file using zivids functions for this. 
 
 #### Processing
-The explaination of code and theory behind is desscribed in the [Jupyter noterbook](https://github.com/eivindtn/TPK4560-Specalization-Project/blob/main/projector-calibration/Zivid_Paired_Projector_Calibration.ipynb).
+The explaination of code and theory behind is described in the [<Calibrate.py>](https://github.com/eivindtn/TPK4560-Specalization-Project/blob/main/src/Calibrate.py).
