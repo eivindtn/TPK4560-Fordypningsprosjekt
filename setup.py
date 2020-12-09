@@ -17,5 +17,6 @@ setuptools.setup(
         'pptk'
         'pyyaml'
         'open3d'
+        'scipy'
     ]
 )

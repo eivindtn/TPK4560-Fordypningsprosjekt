@@ -137,7 +137,7 @@ def main():
     #'number_shuffled_iteration'. The number of random shuffled iteration of the number of frames extracted  
     images_to_iterate = len(images)
     number_under_len = 8
-    number_shuffled_iteration = 40
+    number_shuffled_iteration = 15
     
 
     #Run ProjextorCalibrate from the Class ProjectorCalibrate
@@ -165,8 +165,8 @@ def main():
         # framepoints, are all the checkerboard coordinates in the point cloud detected by the findchessboardCorners()  
 
         #Visualizing the extrinsics parameters from the camera to the projector
-        #visualizationstereo(framepoints[0], flag[0][6],flag[0][7], "Extrinsics Parameters with flag {}".format(method[i]))
-        #visualizationstereo(framepoints[0], noflag[0][6],noflag[0][7], "Extrinsics Parameters without flag{}".format(method[i]))
+        visualizationstereo(framepoints[0], flag[0][6],flag[0][7], "Extrinsics Parameters with flag {}".format(method[i]))
+        visualizationstereo(framepoints[0], noflag[0][6],noflag[0][7], "Extrinsics Parameters without flag{}".format(method[i]))
 
         plot_reprojection(flag[0][5], flag[0][4],"Neglected tangential distortion, {} ".format(method[i]))
         plot_frame_rms_error(flag[:,8],flag[:,0], flag[:,1], "RMS-error relative to extracted frames, neglected tangential distortion, {}".format(method[i]), images_to_iterate)
